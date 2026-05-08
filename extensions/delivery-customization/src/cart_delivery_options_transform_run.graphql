@@ -1,0 +1,13 @@
+query RunInput {
+  cart {
+    attribute(key: "shipping_test_variant") {
+      value
+    }
+    deliveryGroups {
+      deliveryOptions {
+        handle
+        title
+      }
+    }
+  }
+}
