@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "42f9b3c401181a1f59ebe8da80cb579c"
-application_url = "https://example.com"
+application_url = "https://shipping-threshold-app.railway.internal"
 embedded = true
 name = "Shipping Threshold Split Test"
 
@@ -37,15 +37,15 @@ type = "multi_line_text_field"
 api_version = "2026-07"
 
   [[webhooks.subscriptions]]
-  uri = "/webhooks/app/uninstalled"
+  uri = "https://shipping-threshold-app.railway.internal/webhooks/app/uninstalled"
   topics = [ "app/uninstalled" ]
 
   [[webhooks.subscriptions]]
-  uri = "/webhooks/app/scopes_update"
+  uri = "https://shipping-threshold-app.railway.internal/webhooks/app/scopes_update"
   topics = [ "app/scopes_update" ]
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://shipping-threshold-app.railway.internal/api/auth" ]
 
 [build]
 automatically_update_urls_on_dev = true
