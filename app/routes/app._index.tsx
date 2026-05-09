@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
 import { useFetcher } from "react-router";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
@@ -13,6 +15,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function Index() {
+  const fetcher = useFetcher();
+
   return (
     <s-page heading="Shipping Threshold Split Test">
 
