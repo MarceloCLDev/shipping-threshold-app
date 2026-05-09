@@ -9,11 +9,6 @@ name = "Shipping Threshold Split Test"
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_delivery_customizations,write_delivery_customizations"
 
-[product.metafields.app.demo_info]
-type = "single_line_text_field"
-name = "Demo Source Info"
-description = "Tracks products created by the Shopify app template for development"
-
 [webhooks]
 api_version = "2026-07"
 
