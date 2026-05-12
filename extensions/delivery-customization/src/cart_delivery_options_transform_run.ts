@@ -7,16 +7,43 @@ const NO_CHANGES: CartDeliveryOptionsTransformRunResult = {
   operations: [],
 };
 
-const RATE_A_TITLE = "Standard U.S.";
-const RATE_B_TITLE = "Free Standard U.S. Shipping";
+type SplitTestConfig = {
+  enabled: boolean;
+  optionA: string;
+  optionB: string;
+};
+
+function getSplitTestConfig(input: RunInput): SplitTestConfig | null {
+  const value = input.shop?.metafield?.value;
+
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(value) as SplitTestConfig;
+  } catch {
+    return null;
+  }
+}
 
 export function cartDeliveryOptionsTransformRun(
   input: RunInput
 ): CartDeliveryOptionsTransformRunResult {
+  const config = getSplitTestConfig(input);
+
+  if (!config?.enabled) {
+    return NO_CHANGES;
+  }
+
   const variant = input.cart.attribute?.value;
 
   const isVariantB = variant === "B";
-  const titleToHide = isVariantB ? RATE_A_TITLE : RATE_B_TITLE;
+  const titleToHide = isVariantB ? config.optionA : config.optionB;
+
+  console.log("CONFIG:", config);
+  console.log("VARIANT:", variant);
+  console.log("TITLE TO HIDE:", titleToHide);
 
   const operations: CartDeliveryOptionsTransformRunResult["operations"] = [];
 

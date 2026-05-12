@@ -10,4 +10,9 @@ query RunInput {
       }
     }
   }
+  shop {
+    metafield(namespace: "shipping_threshold_split_test", key: "config") {
+      value
+    }
+  }
 }

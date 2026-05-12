@@ -1,24 +1,81 @@
-import { useEffect } from "react";
 import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useFetcher } from "react-router";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { useFetcher, useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+  const { admin } = await authenticate.admin(request);
 
-  return null;
+  const response = await admin.graphql(`
+    #graphql
+    query GetSplitTestConfig {
+      shop {
+        metafield(namespace: "shipping_threshold_split_test", key: "config") {
+          value
+        }
+      }
+    }
+  `);
+
+  const data = await response.json();
+
+  const value = data.data.shop.metafield?.value;
+
+  return {
+    splitTestConfig: value ? JSON.parse(value) : null,
+  };
 };
 
 export default function Index() {
-  const fetcher = useFetcher();
+  const { splitTestConfig } = useLoaderData<typeof loader>();
+  const deliveryFetcher = useFetcher();
+  const splitTestFetcher = useFetcher();
+  const isSplitTestActive =
+    splitTestFetcher.data?.config?.enabled ??
+    splitTestConfig?.enabled ??
+    false;
 
   return (
+
     <s-page heading="Shipping Threshold Split Test">
+
+    <s-banner tone={isSplitTestActive ? "success" : "critical"}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          gap: "16px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          <s-text>A/B Test Status:</s-text>
+          <s-badge tone={isSplitTestActive ? "success" : "critical"}>
+            {isSplitTestActive ? "Active" : "Inactive"}
+          </s-badge>
+        </div>
+
+        <splitTestFetcher.Form method="post" action="/app/activate-split-test">
+          <input type="hidden" name="enabled" value={isSplitTestActive ? "false" : "true"} />
+          <s-button
+            type="submit"
+            variant={isSplitTestActive ? "secondary" : "primary"}
+          >
+            {isSplitTestActive ? "Disable A/B Test" : "Activate A/B Test"}
+          </s-button>
+        </splitTestFetcher.Form>
+      </div>
+    </s-banner>
 
       <s-section heading="Welcome to the MicroPerfumes Shipping Threshold Custom App.">
         <s-paragraph>
@@ -29,17 +86,18 @@ export default function Index() {
         <s-paragraph>
           To start the Shoplift A/B test, you need to activate a Shopify Delivery Customization. Click the button below.
         </s-paragraph>
+
         <s-stack direction="inline" gap="base">
-        <fetcher.Form
+        <deliveryFetcher.Form
           method="post"
           action="/app/activate-delivery-customization"
         >
           <s-button type="submit">Activate delivery customization</s-button>
-        </fetcher.Form>
+        </deliveryFetcher.Form>
         </s-stack>
 
         <div style={{ marginTop: "16px" }}>
-          {fetcher.data?.message && (
+          {deliveryFetcher.data?.message && (
             <s-banner
               tone={fetcher.data.created ? "success" : "info"}
               heading={fetcher.data.created ? "Success" : "Already activated"}
@@ -48,7 +106,7 @@ export default function Index() {
             </s-banner>
           )}
 
-          {fetcher.data?.errors?.length > 0 && (
+          {deliveryFetcher.data?.errors?.length > 0 && (
             <s-banner tone="critical" heading="Error">
               {fetcher.data.errors.map((error, index) => (
                 <s-paragraph key={index}>{error.message}</s-paragraph>
@@ -56,49 +114,9 @@ export default function Index() {
             </s-banner>
           )}
         </div>
+
       </s-section>
 
-      <s-section slot="aside" heading="App template specs">
-        <s-paragraph>
-          <s-text>Framework: </s-text>
-          <s-link href="https://reactrouter.com/" target="_blank">
-            React Router
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Interface: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/app-home/using-polaris-components"
-            target="_blank"
-          >
-            Polaris web components
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>API: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            GraphQL
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Custom data: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/apps/build/custom-data"
-            target="_blank"
-          >
-            Metafields &amp; metaobjects
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Database: </s-text>
-          <s-link href="https://www.prisma.io/" target="_blank">
-            Prisma
-          </s-link>
-        </s-paragraph>
-      </s-section>
     </s-page>
   );
 }
