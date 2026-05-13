@@ -9,6 +9,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
 
+  // Split test metafield
   const response = await admin.graphql(`
     #graphql
     query GetSplitTestConfig {
@@ -21,22 +22,44 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   `);
 
   const data = await response.json();
-
   const value = data.data.shop.metafield?.value;
+
+  // Delivery customization status
+  const deliveryCustomizationResponse = await admin.graphql(`
+    #graphql
+    query GetDeliveryCustomizations {
+      deliveryCustomizations(first: 1) {
+        nodes {
+          id
+          title
+          enabled
+        }
+      }
+    }
+  `);
+
+  const deliveryCustomizationData =
+    await deliveryCustomizationResponse.json();
+
+  const deliveryCustomization =
+    deliveryCustomizationData.data.deliveryCustomizations.nodes[0] || null;
 
   return {
     splitTestConfig: value ? JSON.parse(value) : null,
+    deliveryCustomization,
   };
 };
 
 export default function Index() {
-  const { splitTestConfig } = useLoaderData<typeof loader>();
+  const { splitTestConfig, deliveryCustomization } = useLoaderData<typeof loader>();
   const deliveryFetcher = useFetcher();
   const splitTestFetcher = useFetcher();
   const isSplitTestActive =
     splitTestFetcher.data?.config?.enabled ??
     splitTestConfig?.enabled ??
     false;
+
+  const isDeliveryCustomizationActive = !!deliveryCustomization;
 
   return (
 
@@ -77,44 +100,87 @@ export default function Index() {
       </div>
     </s-banner>
 
-      <s-section heading="Welcome to the MicroPerfumes Shipping Threshold Custom App.">
+      {isSplitTestActive && splitTestConfig && (
+        <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+          <s-box
+            padding="base"
+            border="base"
+            borderRadius="base"
+            background="subdued"
+          >
+            <s-stack gap="base">
+              <s-text fontWeight="bold">Current A/B Test</s-text>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <s-text>{splitTestConfig.optionA}</s-text>
+                <s-badge tone="info">{splitTestConfig.optionAPrice}</s-badge>
+
+                <s-text tone="subdued">vs</s-text>
+
+                <s-text>{splitTestConfig.optionB}</s-text>
+                <s-badge tone="info">{splitTestConfig.optionBPrice}</s-badge>
+              </div>
+            </s-stack>
+          </s-box>
+        </div>
+      )}
+
+      <s-section heading="MicroPerfumes Shipping Threshold Custom App.">
         <s-paragraph>
-          This app creates a custom Shopify function that allows merchants to test and compare two different free shipping thresholds directly on the checkout page. It is designed to support A/B testing strategies and can be seamlessly integrated with experimentation platforms such as Shoplift, Convert, and similar optimization tools. The goal is to help merchants evaluate customer behavior and optimize conversion rates, average order value, and shipping incentive performance.
+          Discover the perfect shipping incentive. This app uses a custom Shopify Function to let you A/B test two different free shipping thresholds directly at checkout. By seamlessly integrating with optimization platforms like Shoplift and Convert, you can track real customer behavior to maximize your conversion rates and average order value.
         </s-paragraph>
       </s-section>
-      <s-section heading="Get Started with the A/B Test">
+      <s-section heading="Enable App Functionality">
         <s-paragraph>
-          To start the Shoplift A/B test, you need to activate a Shopify Delivery Customization. Click the button below.
+          This app requires a Shopify Delivery Customization to modify shipping options during checkout.
         </s-paragraph>
 
         <s-stack direction="inline" gap="base">
-        <deliveryFetcher.Form
-          method="post"
-          action="/app/activate-delivery-customization"
-        >
-          <s-button type="submit">Activate delivery customization</s-button>
-        </deliveryFetcher.Form>
-        </s-stack>
+
+        {isDeliveryCustomizationActive ? (
+            <s-banner tone="success">
+              <s-text>
+                Delivery customization is active and ready to use.
+              </s-text>
+            </s-banner>
+        ) : (
+          <deliveryFetcher.Form
+            method="post"
+            action="/app/activate-delivery-customization"
+          >
+            <s-button type="submit">
+              Activate delivery customization
+            </s-button>
+          </deliveryFetcher.Form>
+        )}
 
         <div style={{ marginTop: "16px" }}>
           {deliveryFetcher.data?.message && (
             <s-banner
-              tone={fetcher.data.created ? "success" : "info"}
-              heading={fetcher.data.created ? "Success" : "Already activated"}
+              tone={deliveryFetcher.data.created ? "success" : "info"}
+              heading={deliveryFetcher.data.created ? "Success" : "Already activated"}
             >
-              <s-paragraph>{fetcher.data.message}</s-paragraph>
+              <s-paragraph>{deliveryFetcher.data.message}</s-paragraph>
             </s-banner>
           )}
 
           {deliveryFetcher.data?.errors?.length > 0 && (
             <s-banner tone="critical" heading="Error">
-              {fetcher.data.errors.map((error, index) => (
+              {deliveryFetcher.data.errors.map((error, index) => (
                 <s-paragraph key={index}>{error.message}</s-paragraph>
               ))}
             </s-banner>
           )}
         </div>
-
+        
+        </s-stack>
       </s-section>
 
     </s-page>

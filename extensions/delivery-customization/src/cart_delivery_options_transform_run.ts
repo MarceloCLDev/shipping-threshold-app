@@ -41,10 +41,6 @@ export function cartDeliveryOptionsTransformRun(
   const isVariantB = variant === "B";
   const titleToHide = isVariantB ? config.optionA : config.optionB;
 
-  console.log("CONFIG:", config);
-  console.log("VARIANT:", variant);
-  console.log("TITLE TO HIDE:", titleToHide);
-
   const operations: CartDeliveryOptionsTransformRunResult["operations"] = [];
 
   for (const group of input.cart.deliveryGroups ?? []) {

@@ -24,7 +24,9 @@ export async function action({ request }) {
   const config = {
     enabled,
     optionA: "Standard U.S.",
+    optionAPrice: "$59.00",
     optionB: "Free Standard U.S. Shipping",
+    optionBPrice: "$69.00",
   };
 
   // 3. Save metafield
