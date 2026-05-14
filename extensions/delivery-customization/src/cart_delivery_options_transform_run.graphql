@@ -7,6 +7,10 @@ query RunInput {
       deliveryOptions {
         handle
         title
+        cost {
+          amount
+          currencyCode
+        }
       }
     }
   }
