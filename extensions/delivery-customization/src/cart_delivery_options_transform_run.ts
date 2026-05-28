@@ -45,9 +45,8 @@ export function cartDeliveryOptionsTransformRun(
 
   for (const group of input.cart.deliveryGroups ?? []) {
     for (const option of group.deliveryOptions ?? []) {
-      const optionAmount = Number(option.cost.amount);
 
-      if (option.title === titleToHide && optionAmount === 0) {
+      if (option.title === titleToHide) {
         operations.push({
           deliveryOptionHide: {
             deliveryOptionHandle: option.handle,
