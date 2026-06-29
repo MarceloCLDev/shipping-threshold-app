@@ -69,5 +69,5 @@ function Extension() {
     config.bannerText ||
     "";
 
-  return <s-stack paddingBlockStart="large" paddingBlockEnd="large"><s-paragraph>{renderRichText(bannerText)}</s-paragraph></s-stack>;
+  return <s-stack paddingBlockStart="small" paddingBlockEnd="large"><s-paragraph>{renderRichText(bannerText)}</s-paragraph></s-stack>;
 }
