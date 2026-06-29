@@ -1,0 +1,25 @@
+api_version = "2026-04"
+
+[[extensions]]
+name = "MP Disclaimer A/B Test"
+handle = "checkout-banner"
+type = "ui_extension"
+uid = "68651933-d67b-5cc4-f075-88466d105dd0eb7b7e99"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[extensions.capabilities]
+api_access = true
+
+[[extensions.metafields]]
+namespace = "$app"
+key = "banner_config"
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "banner_text"
+type = "multi_line_text_field"
+name = "Banner text"
+description = "Text shown in checkout for Variant A."

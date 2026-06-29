@@ -3,7 +3,7 @@
 client_id = "42f9b3c401181a1f59ebe8da80cb579c"
 application_url = "https://shipping-threshold-app-production.up.railway.app"
 embedded = true
-name = "Shipping Threshold Split Test"
+name = "MicroPerfumes A/B Tests"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
