@@ -60,7 +60,7 @@ function Extension() {
     return null;
   }
 
-  if (!config?.enabled || variant !== "A") {
+  if (!config?.enabled || variant !== "B") {
     return null;
   }
 
